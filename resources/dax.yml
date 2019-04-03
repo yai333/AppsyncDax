@@ -1,15 +1,44 @@
 Resources:
+  DaxIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+    RoleName: ${self:custom.daxIamRole}
+    AssumeRolePolicyDocument:
+      Version: "2012-10-17"
+      Statement:
+        - Effect: "Allow"
+          Principal:
+            Service: – dax.amazonaws.com
+          Action:
+            - "sts:AssumeRole"
+    Policies:
+      - PolicyName: "${self:custom.appSync.serviceRole}-Policy"
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Action:
+                - dynamodb:Query
+                - dynamodb:Scan
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+              Resource:
+                Ref: PostsTable
+
   DaxVpc:
     Type: AWS::EC2::VPC
     Properties:
+      InstanceTenancy: default
       CidrBlock: 10.0.0.0/16
+
   daxSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: ap-southeast-2b
       CidrBlock: 10.0.8.0/24
       VpcId:
-        Ref: VPC
+        Ref: DaxVpc
 
   daxSubnet2:
     Type: AWS::EC2::Subnet
@@ -17,7 +46,7 @@ Resources:
       AvailabilityZone: ap-southeast-2c
       CidrBlock: 10.0.32.0/24
       VpcId:
-        Ref: VPC
+        Ref: DaxVpc
 
   DaxCluster:
     Type: AWS::DAX::Cluster
@@ -25,25 +54,28 @@ Resources:
       ClusterName: ${self:custom.daxClusterName}
       NodeType: dax.t2.small
       ReplicationFactor: 1
+      IAMRoleARN:
+        Ref: DaxIamRole
       Description: "DAX cluster created with Serverless and Cloudformation"
       SubnetGroupName:
-        Ref: DBSubnetGroup
-      VpcSecurityGroupIds:
-        - Ref: DatabaseVpcSecurityGroup
+        Ref: DaxSubnetGroup
 
-  DBSubnetGroup:
-    Type: "AWS::RDS::DBSubnetGroup"
+  DaxSubnetGroup:
+    Type: AWS::DAX::SubnetGroup
     Properties:
       DBSubnetGroupDescription: "database subnet group"
       SubnetIds:
-        - Ref: PrivateSubnet1
-        - Ref: PrivateSubnet2
-
-  DaxSecurityGroup:
-    Type: "AWS::EC2::SecurityGroup"
-    Properties:
-      GroupName: DaxSecurityGroup
-      SecurityGroupIngress:
-        - CidrIp: 10.0.0.0/16
-      VpcId:
-        Ref: DaxVpc
+        - Ref: daxSubnet1
+        - Ref: daxSubnet2
+  # DaxVpcSecurityGroup:
+  #   Type: "AWS::EC2::SecurityGroup"
+  #   Properties:
+  #     GroupName: DBSecurityGroup
+  #     GroupDescription: Allow local access
+  #     SecurityGroupIngress:
+  #       - CidrIp: 10.0.0.0/16
+  #         IpProtocol: tcp
+  #         FromPort: 8111
+  #         ToPort: 8111
+  #     VpcId:
+  #       Ref: DaxVpc

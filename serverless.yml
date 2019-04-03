@@ -1,35 +1,26 @@
-service: appsyncDax # NOTE: update this with your service name
-
-# You can pin your service to only deploy with a specific Serverless version
-# Check out our docs for more details
-# frameworkVersion: "=X.X.X"
-
-# Welcome to serverless. Read the docs
-# https://serverless.com/framework/docs/
-
-# Serverless.yml is the configuration the CLI
-# uses to deploy your code to your provider of choice
-
-# The `service` block is the name of the service
 service:
-  name: appsyncauroranodejs
+  name: appsyncDax
+
 provider:
   name: aws
   runtime: nodejs8.10
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'ap-southeast-2'}
   timeout: 300
-  vpc:
-    securityGroupIds:
-      - Fn::GetAtt: [DatabaseVpcSecurityGroup, GroupId]
-    subnetIds:
-      - Ref: PrivateSubnet1
-      - Ref: PrivateSubnet2
+  # vpc:
+  #   securityGroupIds:
+  #     - Fn::GetAtt: [DatabaseVpcSecurityGroup, GroupId]
+  #   subnetIds:
+  #     - Ref: PrivateSubnet1
+  #     - Ref: PrivateSubnet2
   environment:
-    DATABASE_URL: { Fn::GetAtt: [Database, Endpoint.Address] }
-    DATABASE_NAME: ${self:custom.dbName}
-    DATABASE_USERNAME: ${self:custom.dbUserName}
-    DATABASE_PASSWORD: ${self:custom.dbPassword}
+    POSTS_TABLE_NAME: { $self:custom.postsTable }
+  role: { Fn::GetAtt: [DaxIamRole, Arn] }
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "dax:*"
+      Resource: { Fn::GetAtt: [DaxCluster, Arn] }
 
 plugins:
   - serverless-appsync-plugin
@@ -38,6 +29,8 @@ plugins:
 custom:
   poolName: ${self:provider.stage}SimpleCMS
   dbName: "simpleCMS"
+  daxIamRole: "${self:service.name}DaxIamRole"
+  postsTable: ${self:provider.stage}Posts
   appSync:
     region: ${self:provider.region}
     name: ${self:service.name}-${self:provider.stage}
@@ -50,37 +43,31 @@ custom:
     mappingTemplates:
       - type: Query
         dataSource: LambdaSource
-        field: getPosts
-        request: "Query-getPosts-request.vtl"
-        response: "Query-getPosts-response.vtl"
-      - type: Post
-        dataSource: LambdaSource
-        field: author
-        request: "Query-author-request.vtl"
-        response: "Query-author-response.vtl"
+        field: getPostsFromCache
+        request: "Query-getPostsFromCache-request.vtl"
+        response: "Query-getPostsFromCache-response.vtl"
       - type: Mutation
-        field: addPost
+        dataSource: LambdaSource
+        field: addPostToDAX
         request: Mutation-addPost-request.vtl
         response: common-response.vtl
-        kind: PIPELINE
-        functions:
-          - addPost
-          - sendNotification
-      - type: Mutation
-        dataSource: LambdaSource
-        field: deletePost
-        request: Mutation-deletePost-request.vtl
-        response: common-response.vtl
-    functionConfigurations:
-      - dataSource: LambdaSource
-        name: "addPost"
-        request: "Function-addPost-request.vtl"
+      - dataSource: Posts
+        type: Query
+        field: getPostsFromDB
+        request: "Query-getPostsFromDB-request.vtl"
+        response: "Query-getPostsFromDB-response.vtl"
+      - dataSource: Posts
+        type: Mutation
+        field: addPostToDB
+        request: "Mutation-addPostToDB-request.vtl"
         response: "common-response.vtl"
-      - dataSource: LambdaSource
-        name: "sendNotification"
-        request: "Function-sendNotification-request.vtl"
-        response: "Function-sendNotification-response.vtl"
     dataSources:
+      - type: AMAZON_DYNAMODB
+        name: Posts
+        description: "Posts table"
+        config:
+          tableName: ${self:custom.postsTable}
+          serviceRoleArn: { Fn::GetAtt: [AppSyncDynamoDBServiceRole, Arn] }
       - type: AWS_LAMBDA
         name: LambdaSource
         description: "Lambda DataSource"
@@ -92,7 +79,7 @@ functions:
   graphql:
     handler: handler.graphqlHandler
 resources:
-    # appSync data source role
+  # appSync data source role
   - ${file(resources/appsync.yml)}
     # rds
   - ${file(resources/dax.yml)}

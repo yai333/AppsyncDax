@@ -1,8 +1,8 @@
 Resource:
-  FormDataTable:
+  PostsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: ${self:custom.formDataTableName}
+      TableName: ${self:custom.postsTable}
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
