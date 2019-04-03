@@ -1,0 +1,49 @@
+Resources:
+  DaxVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+  daxSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-southeast-2b
+      CidrBlock: 10.0.8.0/24
+      VpcId:
+        Ref: VPC
+
+  daxSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: ap-southeast-2c
+      CidrBlock: 10.0.32.0/24
+      VpcId:
+        Ref: VPC
+
+  DaxCluster:
+    Type: AWS::DAX::Cluster
+    Properties:
+      ClusterName: ${self:custom.daxClusterName}
+      NodeType: dax.t2.small
+      ReplicationFactor: 1
+      Description: "DAX cluster created with Serverless and Cloudformation"
+      SubnetGroupName:
+        Ref: DBSubnetGroup
+      VpcSecurityGroupIds:
+        - Ref: DatabaseVpcSecurityGroup
+
+  DBSubnetGroup:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties:
+      DBSubnetGroupDescription: "database subnet group"
+      SubnetIds:
+        - Ref: PrivateSubnet1
+        - Ref: PrivateSubnet2
+
+  DaxSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: DaxSecurityGroup
+      SecurityGroupIngress:
+        - CidrIp: 10.0.0.0/16
+      VpcId:
+        Ref: DaxVpc
