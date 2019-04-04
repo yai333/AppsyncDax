@@ -1,0 +1,16 @@
+#if( $util.isNullOrBlank($context.identity.cognitoIdentityAuthType)  || $context.identity.cognitoIdentityAuthType != 'authenticated' )
+	$util.unauthorized()
+#end
+
+{
+    "version" : "2017-02-28",
+    "operation" : "PutItem",
+    "key": {
+        "id" :  { "S" : $util.autoId() },
+    },
+    "attributeValues" : {
+        "title" : { "S" : $context.arguments.formid },
+        "content" : { "S" : $context.arguments.userid},
+        "createdAt" :  {"S": $util.time.nowISO8601()},
+    },
+}

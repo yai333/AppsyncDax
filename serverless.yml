@@ -14,8 +14,8 @@ provider:
   #     - Ref: PrivateSubnet1
   #     - Ref: PrivateSubnet2
   environment:
-    POSTS_TABLE_NAME: { $self:custom.postsTable }
-  role: { Fn::GetAtt: [DaxIamRole, Arn] }
+    POSTS_TABLE_NAME: ${self:custom.postsTable}
+
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -29,8 +29,11 @@ plugins:
 custom:
   poolName: ${self:provider.stage}SimpleCMS
   dbName: "simpleCMS"
-  daxIamRole: "${self:service.name}DaxIamRole"
+  daxIamRole: ${self:service.name}DaxIamRole
   postsTable: ${self:provider.stage}Posts
+  systemUserEmail: "yi.ai@neami.app"
+  daxClusterName: "myDynamodbDax"
+  tableThroughput: 5
   appSync:
     region: ${self:provider.region}
     name: ${self:service.name}-${self:provider.stage}
@@ -38,19 +41,14 @@ custom:
     serviceRole: "${self:service.name}-AppSyncServiceRole"
     userPoolConfig:
       awsRegion: "${self:provider.region}"
-      userPoolId: ${self:custom.userPool.${self:provider.stage}}
+      userPoolId: ${self:service.name.${self:provider.stage}}
       defaultAction: ALLOW
     mappingTemplates:
       - type: Query
         dataSource: LambdaSource
-        field: getPostsFromCache
-        request: "Query-getPostsFromCache-request.vtl"
-        response: "Query-getPostsFromCache-response.vtl"
-      - type: Mutation
-        dataSource: LambdaSource
-        field: addPostToDAX
-        request: Mutation-addPost-request.vtl
-        response: common-response.vtl
+        field: getPostsFromDax
+        request: "Query-getPostsFromDax-request.vtl"
+        response: "Query-getPostsFromDax-response.vtl"
       - dataSource: Posts
         type: Query
         field: getPostsFromDB
@@ -61,12 +59,17 @@ custom:
         field: addPostToDB
         request: "Mutation-addPostToDB-request.vtl"
         response: "common-response.vtl"
+      - type: Mutation
+        dataSource: LambdaSource
+        field: addPostViaDax
+        request: Mutation-addPostViaDax-request.vtl
+        response: common-response.vtl
     dataSources:
       - type: AMAZON_DYNAMODB
-        name: Posts
+        name: PostsParallel
         description: "Posts table"
         config:
-          tableName: ${self:custom.postsTable}
+          tableName: ${self:custom.postsTable}Parallel
           serviceRoleArn: { Fn::GetAtt: [AppSyncDynamoDBServiceRole, Arn] }
       - type: AWS_LAMBDA
         name: LambdaSource

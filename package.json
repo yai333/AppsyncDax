@@ -1,0 +1,24 @@
+{
+  "name": "appsyncdax",
+  "version": "1.0.0",
+  "description": "",
+  "main": "handler.js",
+  "dependencies": {
+    "serverless-appsync-plugin": "^1.1.1",
+    "serverless-pseudo-parameters": "^2.4.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yai333/AppsyncDax.git"
+  },
+  "author": "Yi Ai",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yai333/AppsyncDax/issues"
+  },
+  "homepage": "https://github.com/yai333/AppsyncDax#readme"
+}
