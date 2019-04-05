@@ -49,12 +49,12 @@ custom:
         field: getPostsFromDax
         request: "Query-getPostsFromDax-request.vtl"
         response: "Query-getPostsFromDax-response.vtl"
-      - dataSource: Posts
+      - dataSource: PostsParallel
         type: Query
         field: getPostsFromDB
         request: "Query-getPostsFromDB-request.vtl"
         response: "Query-getPostsFromDB-response.vtl"
-      - dataSource: Posts
+      - dataSource: PostsParallel
         type: Mutation
         field: addPostToDB
         request: "Mutation-addPostToDB-request.vtl"
@@ -84,9 +84,9 @@ functions:
 resources:
   # appSync data source role
   - ${file(resources/appsync.yml)}
-    # rds
-  - ${file(resources/dax.yml)}
     # Cognito
   - ${file(resources/dynamodb.yml)}
     # Cognito
   - ${file(resources/cognito.yml)}
+    # Dax
+  - ${file(resources/dax.yml)}

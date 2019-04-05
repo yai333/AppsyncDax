@@ -2,7 +2,7 @@ Resources:
   AppSyncLambdaServiceRole:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: ${self:custom.appSync.serviceRole}-appsync
+      RoleName: ${self:custom.appSync.serviceRole}-appsync-lambda
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -23,10 +23,11 @@ Resources:
                 Resource:
                   - "arn:aws:lambda:${self:custom.appSync.region}:#{AWS::AccountId}:function:${self:service.name}-${self:provider.stage}-graphql"
                   - "arn:aws:lambda:${self:custom.appSync.region}:#{AWS::AccountId}:function:${self:service.name}-${self:provider.stage}-graphql:*"
+
   AppSyncDynamoDBServiceRole:
     Type: "AWS::IAM::Role"
     Properties:
-      RoleName: "${self:custom.appSync.serviceRole}-${self:provider.stage}"
+      RoleName: ${self:custom.appSync.serviceRole}-appsync-dynamodb
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -50,8 +51,8 @@ Resources:
                   - "dynamodb:Scan"
                   - "dynamodb:UpdateItem"
                 Resource:
-                  - "Fn::GetAtt": ["PostsParallelTable", "Arn"]
+                  - { Fn::GetAtt: [PostsParallelTable, Arn] }
                   - "Fn::Join":
                       - "/"
-                      - - { "Fn::GetAtt": ["PostsParallelTable", "Arn"] }
+                      - - { Fn::GetAtt: ["PostsParallelTable", "Arn"] }
                         - "index/*"

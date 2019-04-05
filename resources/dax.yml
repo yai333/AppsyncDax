@@ -2,31 +2,34 @@ Resources:
   DaxIamRole:
     Type: AWS::IAM::Role
     Properties:
-    RoleName: ${self:custom.daxIamRole}
-    AssumeRolePolicyDocument:
-      Version: "2012-10-17"
-      Statement:
-        - Effect: "Allow"
-          Principal:
-            Service:
-              - "dax.amazonaws.com"
-          Action:
-            - "sts:AssumeRole"
-    Policies:
-      - PolicyName: "${self:custom.appSync.serviceRole}-Policy"
-        PolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Effect: "Allow"
-              Action:
-                - dynamodb:Query
-                - dynamodb:Scan
-                - dynamodb:GetItem
-                - dynamodb:PutItem
-                - dynamodb:UpdateItem
-              Resource:
-                - Ref: PostsTable
-                - Ref: PostsParallelTable
+      RoleName: ${self:service.name}dax
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "dax.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: "${self:service.name}-dax"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:GetItem
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                Resource:
+                  - { Fn::GetAtt: ["PostsTable", "Arn"] }
+                  - "Fn::Join":
+                      - "/"
+                      - - { Fn::GetAtt: ["PostsTable", "Arn"] }
+                        - "index/*"
 
   DaxVpc:
     Type: AWS::EC2::VPC
@@ -56,8 +59,7 @@ Resources:
       ClusterName: ${self:custom.daxClusterName}
       NodeType: dax.t2.small
       ReplicationFactor: 1
-      IAMRoleARN:
-        Ref: DaxIamRole
+      IAMRoleARN: { Fn::GetAtt: [DaxIamRole, Arn] }
       Description: "DAX cluster created with Serverless and Cloudformation"
       SubnetGroupName:
         Ref: DaxSubnetGroup
@@ -65,7 +67,6 @@ Resources:
   DaxSubnetGroup:
     Type: AWS::DAX::SubnetGroup
     Properties:
-      DBSubnetGroupDescription: "database subnet group"
       SubnetIds:
         - Ref: daxSubnet1
         - Ref: daxSubnet2
