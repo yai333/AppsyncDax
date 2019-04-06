@@ -14,19 +14,3 @@ Resources:
         WriteCapacityUnits: ${self:custom.tableThroughput}
       StreamSpecification:
         StreamViewType: NEW_IMAGE
-
-  PostsParallelTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: ${self:custom.postsTable}Parallel
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: ${self:custom.tableThroughput}
-        WriteCapacityUnits: ${self:custom.tableThroughput}
-      StreamSpecification:
-        StreamViewType: NEW_IMAGE

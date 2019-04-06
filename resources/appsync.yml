@@ -51,8 +51,8 @@ Resources:
                   - "dynamodb:Scan"
                   - "dynamodb:UpdateItem"
                 Resource:
-                  - { Fn::GetAtt: [PostsParallelTable, Arn] }
+                  - { Fn::GetAtt: [PostsTable, Arn] }
                   - "Fn::Join":
                       - "/"
-                      - - { Fn::GetAtt: ["PostsParallelTable", "Arn"] }
+                      - - { Fn::GetAtt: ["PostsTable", "Arn"] }
                         - "index/*"

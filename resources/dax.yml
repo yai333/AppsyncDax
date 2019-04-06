@@ -24,6 +24,7 @@ Resources:
                   - dynamodb:GetItem
                   - dynamodb:PutItem
                   - dynamodb:UpdateItem
+                  - dynamodb:DescribeTable
                 Resource:
                   - { Fn::GetAtt: ["PostsTable", "Arn"] }
                   - "Fn::Join":
@@ -61,6 +62,8 @@ Resources:
       ReplicationFactor: 1
       IAMRoleARN: { Fn::GetAtt: [DaxIamRole, Arn] }
       Description: "DAX cluster created with Serverless and Cloudformation"
+      SecurityGroupIds:
+        - Ref: DaxVpcSecurityGroup
       SubnetGroupName:
         Ref: DaxSubnetGroup
 
@@ -70,15 +73,15 @@ Resources:
       SubnetIds:
         - Ref: daxSubnet1
         - Ref: daxSubnet2
-  # DaxVpcSecurityGroup:
-  #   Type: "AWS::EC2::SecurityGroup"
-  #   Properties:
-  #     GroupName: DBSecurityGroup
-  #     GroupDescription: Allow local access
-  #     SecurityGroupIngress:
-  #       - CidrIp: 10.0.0.0/16
-  #         IpProtocol: tcp
-  #         FromPort: 8111
-  #         ToPort: 8111
-  #     VpcId:
-  #       Ref: DaxVpc
+  DaxVpcSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupName: DaxSecurityGroup
+      GroupDescription: Allow local access
+      SecurityGroupIngress:
+        - CidrIp: 10.0.0.0/16
+          IpProtocol: tcp
+          FromPort: 8111
+          ToPort: 8111
+      VpcId:
+        Ref: DaxVpc

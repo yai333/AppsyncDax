@@ -1,21 +1,21 @@
 service:
-  name: appsyncDax
+  name: appsyncCacheLayer
 
 provider:
   name: aws
   runtime: nodejs8.10
   stage: ${opt:stage, 'dev'}
   region: ${opt:region, 'ap-southeast-2'}
-  timeout: 300
-  # vpc:
-  #   securityGroupIds:
-  #     - Fn::GetAtt: [DatabaseVpcSecurityGroup, GroupId]
-  #   subnetIds:
-  #     - Ref: PrivateSubnet1
-  #     - Ref: PrivateSubnet2
+  timeout: 15
+  vpc:
+    securityGroupIds:
+      - Fn::GetAtt: [DaxVpcSecurityGroup, GroupId]
+    subnetIds:
+      - Ref: daxSubnet1
+      - Ref: daxSubnet2
   environment:
     POSTS_TABLE_NAME: ${self:custom.postsTable}
-
+    DAX_ENDPOINT: { Fn::GetAtt: [DaxCluster, ClusterDiscoveryEndpoint] }
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -45,31 +45,44 @@ custom:
       defaultAction: ALLOW
     mappingTemplates:
       - type: Query
-        dataSource: LambdaSource
-        field: getPostsFromDax
-        request: "Query-getPostsFromDax-request.vtl"
-        response: "Query-getPostsFromDax-response.vtl"
-      - dataSource: PostsParallel
-        type: Query
-        field: getPostsFromDB
-        request: "Query-getPostsFromDB-request.vtl"
-        response: "Query-getPostsFromDB-response.vtl"
-      - dataSource: PostsParallel
-        type: Mutation
-        field: addPostToDB
-        request: "Mutation-addPostToDB-request.vtl"
-        response: "common-response.vtl"
-      - type: Mutation
-        dataSource: LambdaSource
-        field: addPostViaDax
-        request: Mutation-addPostViaDax-request.vtl
+        field: getPosts
+        request: Query-getPosts-request.vtl
         response: common-response.vtl
+        kind: PIPELINE
+        functions:
+          - getPostsFromDax
+          - getPostsFromDB
+      - type: Mutation
+        field: addPost
+        request: Mutation-addPost-request.vtl
+        response: common-response.vtl
+        kind: PIPELINE
+        functions:
+          - addPostViaDax
+          - addPostToDB
+    functionConfigurations:
+      - dataSource: LambdaSource
+        name: "getPostsFromDax"
+        request: "Function-getPostsFromDax-request.vtl"
+        response: "Function-getPostsFromDax-response.vtl"
+      - dataSource: Posts
+        name: "getPostsFromDB"
+        request: "Function-getPostsFromDB-request.vtl"
+        response: "Function-getPostsFromDB-response.vtl"
+      - dataSource: LambdaSource
+        name: addPostViaDax
+        request: Function-addPostViaDax-request.vtl
+        response: common-response.vtl
+      - dataSource: Posts
+        name: addPostToDB
+        request: "Function-addPostToDB-request.vtl"
+        response: "common-response.vtl"
     dataSources:
       - type: AMAZON_DYNAMODB
-        name: PostsParallel
+        name: Posts
         description: "Posts table"
         config:
-          tableName: ${self:custom.postsTable}Parallel
+          tableName: ${self:custom.postsTable}
           serviceRoleArn: { Fn::GetAtt: [AppSyncDynamoDBServiceRole, Arn] }
       - type: AWS_LAMBDA
         name: LambdaSource

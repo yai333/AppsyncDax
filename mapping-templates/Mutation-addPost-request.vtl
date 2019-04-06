@@ -1,0 +1,8 @@
+## #if( $util.isNullOrBlank($context.identity.cognitoIdentityAuthType)  || $context.identity.cognitoIdentityAuthType != 'authenticated' )
+## 	$util.unauthorized()
+## #end
+$util.qr($context.stash.put("id", $util.autoId()))
+$util.qr($context.stash.put("title", $ctx.args.post.title))
+$util.qr($context.stash.put("createdAt", $util.time.nowISO8601()))
+$util.qr($context.stash.put("content", $ctx.args.post.content))
+{}

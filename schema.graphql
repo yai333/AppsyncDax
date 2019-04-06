@@ -1,12 +1,10 @@
 input PostInput {
   title: String
   content: String
-  createdAt: String
 }
 
 type Mutation {
-  addPostViaDax(post: PostInput!): Post
-  addPostToDB(post: PostInput!): Post
+  addPost(post: PostInput!): Post
 }
 
 type Post {
@@ -17,6 +15,5 @@ type Post {
 }
 
 type Query {
-  getPostsFromDax(limit: Int, currentPage: Int, nextPage: Int): [Post]
-  getPostsFromDB(limit: Int, currentPage: Int, nextPage: Int): [Post]
+  getPosts(limit: Int, currentPage: Int, nextPage: Int): [Post]
 }

@@ -1,0 +1,8 @@
+#if($ctx.prev.result.errorMessage || $ctx.prev.result.items.size() == 0)
+{
+    "version": "2017-02-28",
+    "operation": "Scan"
+}
+#else
+  #return($ctx.prev.result)
+#end

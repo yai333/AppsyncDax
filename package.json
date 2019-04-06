@@ -4,8 +4,10 @@
   "description": "",
   "main": "handler.js",
   "dependencies": {
+    "amazon-dax-client": "^1.2.1",
     "serverless-appsync-plugin": "^1.1.1",
-    "serverless-pseudo-parameters": "^2.4.0"
+    "serverless-pseudo-parameters": "^2.4.0",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {},
   "scripts": {

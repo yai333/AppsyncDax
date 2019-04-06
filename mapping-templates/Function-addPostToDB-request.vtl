@@ -1,0 +1,17 @@
+
+#if($ctx.prev.result.errorMessage)
+{
+    "version" : "2017-02-28",
+    "operation" : "PutItem",
+    "key": {
+       "id" : $util.dynamodb.toDynamoDBJson($context.stash.id)
+    },
+    "attributeValues" : {
+        "title" : $util.dynamodb.toDynamoDBJson($context.stash.title) ,
+        "content" : $util.dynamodb.toDynamoDBJson($context.stash.content),
+    	  "createdAt":  $util.dynamodb.toDynamoDBJson($context.stash.createdAt)
+    },
+}
+#else
+  #return($ctx.prev.result)
+#end
