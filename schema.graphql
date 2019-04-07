@@ -8,7 +8,7 @@ type Mutation {
 }
 
 type Post {
-  id: Int
+  id: ID!
   title: String
   content: String
   createdAt: String
