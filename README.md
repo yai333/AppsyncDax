@@ -4,7 +4,6 @@ https://medium.com/@yia333/how-to-add-a-cache-layer-to-appsync-dynamodb-resolver
 
 ## Deploy backend appsync api
 
-  ```
 - Set up AWS credentials
 
   ```aws configure```
