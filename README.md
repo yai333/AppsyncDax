@@ -6,12 +6,18 @@ https://medium.com/@yia333/how-to-add-a-cache-layer-to-appsync-dynamodb-resolver
 
 - Set up AWS credentials
 
-  ```aws configure```
+  ```
+  aws configure
+  ```
 
 - Install Serverless framework
 
-  ```npm install -g serverless```
+  ```
+  npm install -g serverless
+  ```
 
-- Deploy
-  ```sls deploy --stage dev```
+- Deploy Appsync
+  ```
+  sls deploy --stage dev
+  ```
 
