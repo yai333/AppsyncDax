@@ -1,0 +1,17 @@
+
+{
+  "version": "2018-05-29",
+  "method": "GET",
+  "resourcePath": "/",
+  "params":{
+    "query":
+      {
+      	"Action":"SendEmail",
+      	"Source":"noreply@neami.blue",
+        "Destination.ToAddresses.member.1":"test1@email.com",
+        "Destination.ToAddresses.member.2":"test2@email.com",
+        "Message.Subject.Data":"test subject",
+      	"Message.Body.Text.Data": "test content"
+      }
+  }
+}

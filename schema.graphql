@@ -5,6 +5,7 @@ input PostInput {
 
 type Mutation {
   addPost(post: PostInput!): Post
+  sendNotification: String
 }
 
 type Post {

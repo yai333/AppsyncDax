@@ -56,3 +56,26 @@ Resources:
                       - "/"
                       - - { Fn::GetAtt: ["PostsTable", "Arn"] }
                         - "index/*"
+  AppSyncSESserviceRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      RoleName: ${self:custom.appSync.serviceRole}-appsync-ses
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "appsync.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: "${self:custom.appSync.serviceRole}-ses"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "ses:SendEmail"
+                  - "ses:SendRawEmail"
+                Resource: "arn:aws:ses:${self:custom.ses.region}:#{AWS::AccountId}:identity/noreply@neami.blue"
