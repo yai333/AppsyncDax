@@ -65,8 +65,8 @@ custom:
       - type: Mutation
         dataSource: AWSSES
         field: sendNotification
-        request: Function-sendNotification-request.vtl
-        response: Function-sendNotification-response.vtl
+        request: Mutation-sendNotification-request.vtl
+        response: Mutation-sendNotification-response.vtl
     functionConfigurations:
       - dataSource: LambdaSource
         name: "getPostsFromDax"
